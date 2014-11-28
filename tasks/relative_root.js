@@ -28,7 +28,14 @@ module.exports = function(grunt) {
     function relativizeHTML (source, relativeRoot) {
       return source
         .replace(/(href=["'])\/(?!\/)/g, '$1'+relativeRoot)
+        .replace(/(include="')\/(?!\/)/g, '$1'+relativeRoot)
+        .replace(/(include='")\/(?!\/)/g, '$1'+relativeRoot)
         .replace(/(src=["'])\/(?!\/)/g, '$1'+relativeRoot);
+    }
+
+    function relativizeJS (source, relativeRoot) {
+      return source
+        .replace(/\/views\/(?!\/)/g, relativeRoot + 'views/')
     }
 
     this.files.forEach(function(file) {
@@ -37,9 +44,16 @@ module.exports = function(grunt) {
           extension = path.extname(src),
           filter, contents;
 
+      // Quick patch for bower components animate.css
+      if ("dist/bower_components/animate.css" == src) {
+        extension = "";
+        return
+      }
+
       switch(extension) {
         case '.css': filter = relativizeCSS; break;
         case '.html': filter = relativizeHTML; break;
+        case '.js': filter = relativizeJS; break;
         default: grunt.warn('Unsupported extension '+src); return;
       }
 
